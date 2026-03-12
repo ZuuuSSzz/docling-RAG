@@ -1,0 +1,30 @@
+{"id":"p1_001","question":"What is the main application used to motivate the MINTS method?","expected":"Secondary school enrollment data with missing values across countries and years.","mode":"text"}
+{"id":"p1_002","question":"In the school enrollment study, what do NER and GER stand for?","expected":"NER is Net Enrollment Rate, and GER is Gross Enrollment Ratio.","mode":"text"}
+{"id":"p1_003","question":"Which measure can exceed 100 percent, NER or GER?","expected":"GER can exceed 100 percent.","mode":"text"}
+{"id":"p1_004","question":"How many countries and years are in the filtered enrollment dataset?","expected":"202 countries and 51 years.","mode":"text"}
+{"id":"p1_005","question":"What years are covered by the enrollment dataset index t?","expected":"1970 to 2020 (t=1 to t=51).","mode":"text"}
+{"id":"p1_006","question":"What are the overall missingness rates for NER and GER in the motivating dataset?","expected":"About 73.0% for NER and about 37.6% for GER.","mode":"text"}
+{"id":"p1_007","question":"What does MINTS stand for?","expected":"Multiple Imputation of hierarchical Nonlinear Time Series data.","mode":"text"}
+{"id":"p1_008","question":"What missing-data assumption is used for the main imputation model in the MINTS paper?","expected":"Ignorable missingness / Missing At Random (MAR) assumption.","mode":"text"}
+{"id":"p1_009","question":"In the MINTS setup, which variable is treated as auxiliary and which as variable of interest?","expected":"X (GER) is auxiliary and Y (NER) is the variable of interest.","mode":"text"}
+{"id":"p1_010","question":"Name one widely used benchmark method mentioned for hierarchical time-series multiple imputation.","expected":"Amelia II or multilevel MICE.","mode":"text"}
+{"id":"p1_011","question":"What type of system is analyzed in the active-particle paper?","expected":"Active Brownian particles in a non-equilibrium steady state.","mode":"text"}
+{"id":"p1_012","question":"What is the central modeling idea used for single-particle dynamics in the active-particle paper?","expected":"Use local density fluctuations as a temporally correlated stochastic variable.","mode":"text"}
+{"id":"p1_013","question":"How is local density near a particle defined in the simulations?","expected":"As the number of contacting particles normalized by six.","mode":"text"}
+{"id":"p1_014","question":"What happens to local-density auto-correlation over time according to the paper?","expected":"It decays approximately exponentially with time.","mode":"text"}
+{"id":"p1_015","question":"What is the reported form for density correlation decay used to estimate correlation time?","expected":"C_rho(t) = exp(-t/tau).","mode":"text"}
+{"id":"p1_016","question":"In the active-particle simulations, what integration time step is used?","expected":"Delta t = 0.001.","mode":"text"}
+{"id":"p1_017","question":"What range of global packing densities is reported in the active-particle simulation setup?","expected":"Approximately 0.1 to 0.65.","mode":"text"}
+{"id":"p1_018","question":"What self-propulsion speeds are listed in the active-particle setup?","expected":"v0 values 0.75, 1.0, 1.25, 2.0, and 3.0.","mode":"text"}
+{"id":"p1_019","question":"What does the paper say about mean-field performance at high packing density?","expected":"Mean-field fails at high density due to significant density fluctuations.","mode":"text"}
+{"id":"p1_020","question":"In the active-particle paper, what does Figure 4 visualize?","expected":"Local density auto-correlation versus time across packing densities.","mode":"visual"}
+{"id":"p1_021","question":"What machine-learning model is used in the spatial transcriptomics paper to predict future active-cell distributions?","expected":"XGBoost.","mode":"text"}
+{"id":"p1_022","question":"Which gene's active-cell distribution is modeled in the transcriptomics paper?","expected":"The sog gene (including sogD contexts).","mode":"text"}
+{"id":"p1_023","question":"Along which embryo axes are predictions discussed in the transcriptomics study?","expected":"Anterior-posterior (AP) and dorsal-ventral (DV) axes.","mode":"text"}
+{"id":"p1_024","question":"What spatial statistic is explicitly used as a feature in the transcriptomics pipeline?","expected":"Ripley's K-function.","mode":"text"}
+{"id":"p1_025","question":"What segmentation method is used during preprocessing in the transcriptomics pipeline?","expected":"Cellpose.","mode":"text"}
+{"id":"p1_026","question":"Which developmental stage labels are listed for manual labeling in preprocessing?","expected":"NC13, NC14A, NC14B, NC14C, and NC14D.","mode":"text"}
+{"id":"p1_027","question":"How long were embryos imaged and at what scan interval in the optimized protocol?","expected":"About 2 hours with a 30-second interval per scan.","mode":"text"}
+{"id":"p1_028","question":"What four grid sizes were tested before selecting an operating grid size?","expected":"250, 125, 62.5, and 31.25.","mode":"text"}
+{"id":"p1_029","question":"Which grid size was selected as the practical optimum in the transcriptomics experiments?","expected":"62.5.","mode":"text"}
+{"id":"p1_030","question":"In the transcriptomics paper, what does Figure 1 describe at a high level?","expected":"The computational analysis pipeline from imaging and segmentation to prediction of next-stage active-cell distribution.","mode":"visual"}
