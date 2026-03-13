@@ -1,6 +1,6 @@
 # docling-RAG
 
-Simple **RAG (Retrieval-Augmented Generation)** pipeline built with Docling + LangChain + Qdrant.
+**RAG (Retrieval-Augmented Generation)** pipeline built with Docling + LangChain + Qdrant.
 
 It:
 - converts your documents to text (and optional visual chunks),
@@ -117,4 +117,30 @@ rag-benchmarking/
 ├── pyproject.toml
 └── README.md
 ```
+
+---
+
+## 7. When to enable VLM
+
+- **Turn VLM ON (`--use-vlm`)** when:
+  - your PDFs contain many **figures, charts, scanned pages, or screenshots**, and you care about visual reasoning.
+  - you want `.chunks.md` exports for debugging complex visual documents.
+- **Run with VLM (Ollama)** — minimal example:
+  ```bash
+  # 1) Start Ollama server and pull a VLM model
+  ollama serve &
+  ollama pull ibm/granite-docling:latest
+
+  # 2) From the rag-benchmarking directory, run:
+  uv run python scripts/docling_rag_agent.py \
+    -f /path/to/your/docs/or/pdf \
+    -q "Tell me about this document" \
+    --use-vlm \
+    --vlm-runtime ollama \
+    --vlm-url http://localhost:11434/v1/chat/completions \
+    --vlm-model ibm/granite-docling:latest
+  ```
+- **Leave VLM OFF** when:
+  - documents are mostly **clean text + tables** and standard Docling parsing is enough.
+  - you are doing large‑scale runs (hundreds/thousands of PDFs) and want to avoid the extra VLM latency/cost on the visual side.
 
