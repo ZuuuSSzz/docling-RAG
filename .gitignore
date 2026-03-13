@@ -1,0 +1,15 @@
+# Virtual environment and Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Qdrant vector store (regenerate with --docs)
+data/qdrant_data/
+
+# Benchmark outputs (regenerate with benchmark_runner.py)
+results/*.jsonl
+
+# Environment and secrets
+.env
+.env.local
