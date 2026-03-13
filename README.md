@@ -1,152 +1,120 @@
 # docling-RAG
 
-A **RAG (Retrieval-Augmented Generation)** pipeline built with [Docling](https://github.com/DS4SD/docling), [LangChain](https://python.langchain.com/), and [Qdrant](https://qdrant.tech/). Ingest PDFs and other documents, chunk them with embedding-model–aligned tokenization, index to a local or remote vector store, and answer questions with an LLM.
+Simple **RAG (Retrieval-Augmented Generation)** pipeline built with Docling + LangChain + Qdrant.
 
-## Features
+It:
+- converts your documents to text (and optional visual chunks),
+- chunks + embeds them into Qdrant,
+- answers questions with a local LLM (via Ollama),
+- optionally runs a small benchmark over a set of questions.
 
-- **Docling** for document conversion (PDF, Office, HTML, etc.) with optional **VLM** (e.g. Granite) for complex PDF layouts
-- **Reproducible chunking**: tokenizer aligned with the embedding model and configurable max tokens per chunk (default 512)
-- **Qdrant** for vector search: embedded (local), in-memory, or remote server
-- **Benchmark harness**: run question sets and export answers + retrieval metadata to JSONL
+---
 
-## Prerequisites
+## 1. Methodology (how it works)
 
-- **Python 3.10+**
-- **[uv](https://docs.astral.sh/uv/)** (recommended) or pip
+- **Ingestion**: Docling parses PDFs/Office/etc. into structured chunks (text, tables, images).
+- **Chunking**: chunks are cut to a fixed token budget aligned with the embedding model.
+- **Indexing**: chunks are embedded and stored in **Qdrant** (embedded, in-memory, or remote).
+- **Retrieval**: for a question, top‑k relevant chunks are fetched from Qdrant.
+- **Generation**: an Ollama LLM (default `llama3.2:3b`) answers using those chunks as context.
+
+---
+
+## 2. Requirements
+
+- **Python**: 3.10+
+- **Package manager**: `uv` (recommended) or `pip`
+- **LLM**: [Ollama](https://ollama.com) running locally  
+  - default model: `llama3.2:3b` (see `GEN_MODEL_ID` in `scripts/docling_config.py`)
 
 Optional:
+- **VLM backend** (Granite / vLLM / Ollama VLM / LM Studio) for complex PDFs (`--use-vlm`)
+- **HF token** (`HF_TOKEN`) if you route anything through HuggingFace
 
-- **Ollama** (or another LLM endpoint) for answer generation
-- **Hugging Face token** (`HF_TOKEN`) if using HuggingFace Inference API for embeddings
-- **VLM API** (e.g. vLLM with Granite) for `--use-vlm` PDF conversion
+---
 
-## Quick start
+## 3. Getting started (basic workflow)
 
-Clone the repo and run from the project root:
+From the repo root:
 
 ```bash
-# Install dependencies
+# 1) Install dependencies
 uv sync
 
-# Run the RAG pipeline (interactive: you'll be prompted for a document path and questions)
-uv run python scripts/docling_rag_agent.py
-```
+# 2) Make sure Ollama is running and model is pulled
+ollama pull llama3.2:3b
 
-On first run you'll be asked for a **document path**: point it at a folder of PDFs (or other supported files) or a single file. Documents are chunked, embedded, and stored in `data/qdrant_data` by default. On later runs you can pass **`--reuse-collection`** to skip re-ingestion and only run queries.
-
-## Basic usage
-
-### Interactive Q&A
-
-```bash
-# Ingest docs from a folder and then ask questions
-uv run python scripts/docling_rag_agent.py -f /path/to/your/docs -q "Your question"
-
-# Reuse existing vector store (no re-chunking)
-uv run python scripts/docling_rag_agent.py --reuse-collection -q "Your question"
-```
-
-### Qdrant modes
-
-- **Embedded** (default): local files in `./data/qdrant_data`
-- **Memory**: in-memory only (no persistence)
-- **Remote**: connect to a Qdrant server
-
-```bash
-uv run python scripts/docling_rag_agent.py --qdrant-mode embedded --qdrant-location ./data/qdrant_data
-uv run python scripts/docling_rag_agent.py --qdrant-mode memory
-uv run python scripts/docling_rag_agent.py --qdrant-mode remote --qdrant-location http://localhost:6333
-```
-
-### Optional: HuggingFace
-
-Set `HF_TOKEN` in your environment (or in a `.env` file in the project root) if you use HuggingFace for embeddings or inference.
-
-## VLM pipeline (better PDFs)
-
-For complex PDFs you can use Docling’s **VLM pipeline** (e.g. Granite) via an OpenAI-compatible API:
-
-```bash
+# 3) Run RAG on your own docs
 uv run python scripts/docling_rag_agent.py \
-  --use-vlm \
-  --vlm-preset granite_docling \
-  --vlm-url http://localhost:8000/v1/chat/completions \
-  --vlm-concurrency 64 \
-  -f /path/to/pdfs
+  -f /path/to/your/docs \
+  -q "Your question"
 ```
 
-Non-PDF files still use the standard Docling pipeline. See Docling’s [VLM examples](https://docling-project.github.io/docling/examples/minimal_vlm_pipeline/) for server setup.
+What happens:
+- documents under `/path/to/your/docs` are parsed and chunked,
+- embeddings are stored in `data/qdrant_data`,
+- the script prints the final answer + some basic source info.
 
-## Benchmark runner
+To **reuse the same index** without re‑ingesting:
 
-Evaluate a set of questions and write results to JSONL:
+```bash
+uv run python scripts/docling_rag_agent.py --reuse-collection -q "Another question"
+```
+
+---
+
+## 4. Running the benchmark
+
+You can evaluate the pipeline on a question set and store the results in JSONL.
 
 ```bash
 uv run python scripts/benchmark_runner.py \
   --docs /path/to/your/docs \
   --questions /path/to/questions.jsonl \
-  --output /path/to/results.jsonl \
+  --output ./results/results.jsonl \
   --retrieval-mode mixed
 ```
 
-**Question file format** (`questions.jsonl`): one JSON object per line, e.g.:
+Where each line in `questions.jsonl` looks like:
 
 ```json
 {"id": "q1", "question": "What is the main finding?", "expected": "Optional reference answer.", "mode": "mixed"}
 ```
 
-`mode` is optional and can be `text`, `visual`, or `mixed`.
+`mode` can be `text`, `visual`, or `mixed` (optional).
 
-**Dump chunks** while indexing (for inspection):
+---
 
-```bash
-uv run python scripts/benchmark_runner.py \
-  --docs /path/to/docs \
-  --questions /path/to/questions.jsonl \
-  --output results.jsonl \
-  --dump-chunks-path chunks.jsonl
-```
+## 5. Useful options (quick reference)
 
-## Inspect Qdrant contents
+- **Qdrant mode**:
+  - `--qdrant-mode embedded --qdrant-location ./data/qdrant_data` (default, persistent)
+  - `--qdrant-mode memory` (in‑memory only, throw‑away)
+  - `--qdrant-mode remote --qdrant-location http://localhost:6333`
+- **VLM for tough PDFs**:
+  - add `--use-vlm` and set `--vlm-runtime` / `--vlm-url` / `--vlm-model` as needed.
+- **Chunking** (for more control):
+  - `--max-chunk-tokens 512`
+  - `--no-tokenizer`
+  - `--no-merge-peers`
 
-To peek at stored vectors and payloads:
+---
 
-```bash
-uv run python scripts/inspect_qdrant.py \
-  --qdrant-mode embedded \
-  --qdrant-location ./data/qdrant_data \
-  --collection docling \
-  --limit 20
-```
+## 6. Project layout
 
-## Chunking options
-
-Chunking is aligned with the embedding model for consistent retrieval. Useful flags:
-
-| Option | Description |
-|--------|-------------|
-| `--max-chunk-tokens 512` | Max tokens per chunk (default 512) |
-| `--no-tokenizer` | Use default HybridChunker (faster, less control) |
-| `--no-merge-peers` | Disable merging of undersized peer chunks |
-
-## Project layout
-
-```
+```text
 rag-benchmarking/
 ├── scripts/
-│   ├── docling_rag_agent.py   # Main CLI: ingest + Q&A
-│   ├── docling_rag_core.py    # RAG chain, retriever, Qdrant setup
-│   ├── docling_loader.py      # Docling load + chunk
-│   ├── docling_config.py      # Config and env
-│   ├── benchmark_runner.py    # Batch evaluation
-│   ├── inspect_qdrant.py      # Inspect vector store
-│   └── rag_contract.py        # Response normalization
-├── data/                      # Default Qdrant data (gitignored: data/qdrant_data/)
-├── results/                   # Benchmark outputs (gitignored: results/*.jsonl)
+│   ├── docling_rag_agent.py    # Main CLI: ingest + Q&A
+│   ├── docling_rag_core.py     # RAG chain, retriever, Qdrant setup
+│   ├── docling_loader.py       # Docling load + chunk
+│   ├── docling_config.py       # Config: models, defaults
+│   ├── benchmark_runner.py     # Batch evaluation / benchmarking
+│   ├── inspect_qdrant.py       # Inspect vector store contents
+│   └── rag_contract.py         # Normalized answer + metadata format
+├── data/                       # Default Qdrant data lives here
+├── results/                    # Benchmark outputs (.jsonl)
 ├── pyproject.toml
 └── README.md
 ```
 
-## License
-
-See the repository for license information.
